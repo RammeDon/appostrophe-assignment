@@ -130,7 +130,7 @@ export function SelectionOverlay({
   )
 
   return (
-    <div className="absolute inset-0 z-10">
+    <div className="pointer-events-none absolute inset-0 z-10">
       <div
         className="pointer-events-none absolute outline outline-2 outline-blue-500"
         style={{
@@ -147,7 +147,7 @@ export function SelectionOverlay({
         return (
           <div
             key={handle}
-            className="absolute h-3 w-3 border-2 border-blue-500 bg-white"
+            className="pointer-events-auto absolute h-3 w-3 border-2 border-blue-500 bg-white"
             style={{
               left: cornerScreen.x,
               top: cornerScreen.y,
@@ -162,7 +162,7 @@ export function SelectionOverlay({
         )
       })}
       <div
-        className="absolute h-3 w-3 rounded-full border-2 border-blue-500 bg-white"
+        className="pointer-events-auto absolute h-3 w-3 rounded-full border-2 border-blue-500 bg-white"
         style={{
           left: rotateHandleScreen.x,
           top: rotateHandleScreen.y,
