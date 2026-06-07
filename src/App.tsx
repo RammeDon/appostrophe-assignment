@@ -17,6 +17,7 @@ function App() {
       <CanvasViewport ref={viewportRef} state={state} dispatch={dispatch}>
         <WorldLayer
           viewport={state.viewport}
+          viewportRef={viewportRef}
           items={state.items}
           dispatch={dispatch}
         >

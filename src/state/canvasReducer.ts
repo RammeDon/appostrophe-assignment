@@ -51,6 +51,15 @@ export function canvasReducer(
       return { ...state, selectedId: action.id }
     case 'DESELECT':
       return { ...state, selectedId: null }
+    case 'MOVE_ITEM':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? { ...item, x: item.x + action.dx, y: item.y + action.dy }
+            : item,
+        ),
+      }
     case 'SET_VIEWPORT':
       return { ...state, viewport: action.viewport }
     default:
