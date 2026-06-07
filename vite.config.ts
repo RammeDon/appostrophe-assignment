@@ -1,7 +1,15 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-})
+export default defineConfig(({ command }) => ({
+  plugins: [react(), tailwindcss()],
+  test: {
+    environment: 'node',
+  },
+  ...(command === 'serve' && process.env.NODE_ENV === 'production'
+    ? { oxc: { jsx: { refresh: false } } }
+    : {}),
+}))
