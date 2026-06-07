@@ -61,6 +61,7 @@ export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
       <div
         ref={ref}
         className="relative h-screen w-screen overflow-hidden bg-neutral-900"
+        onClick={() => dispatch({ type: 'DESELECT' })}
       >
         {children}
       </div>

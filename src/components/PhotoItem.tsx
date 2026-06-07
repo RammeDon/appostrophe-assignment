@@ -1,14 +1,22 @@
+import type { Dispatch } from 'react'
 import type { CanvasItem } from '../lib/types'
+import type { CanvasAction } from '../state/canvasReducer'
 
 interface PhotoItemProps {
   item: CanvasItem
+  dispatch: Dispatch<CanvasAction>
 }
 
-export function PhotoItem({ item }: PhotoItemProps) {
+export function PhotoItem({ item, dispatch }: PhotoItemProps) {
   const { x, y, width, height, rotation, src } = item
 
   return (
     <div
+      className="cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation()
+        dispatch({ type: 'SELECT', id: item.id })
+      }}
       style={{
         position: 'absolute',
         left: x,
