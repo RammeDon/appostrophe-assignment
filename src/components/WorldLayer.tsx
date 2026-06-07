@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react'
-import type { Viewport } from '../lib/types'
+import type { CanvasItem, Viewport } from '../lib/types'
+import { PhotoItem } from './PhotoItem'
 
 interface WorldLayerProps {
   viewport: Viewport
+  items: CanvasItem[]
   children: ReactNode
 }
 
-export function WorldLayer({ viewport, children }: WorldLayerProps) {
+export function WorldLayer({ viewport, items, children }: WorldLayerProps) {
   return (
     <div
       style={{
@@ -17,6 +19,9 @@ export function WorldLayer({ viewport, children }: WorldLayerProps) {
       }}
     >
       {children}
+      {items.map((item) => (
+        <PhotoItem key={item.id} item={item} />
+      ))}
     </div>
   )
 }

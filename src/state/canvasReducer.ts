@@ -45,6 +45,8 @@ export function canvasReducer(
   action: CanvasAction,
 ): CanvasState {
   switch (action.type) {
+    case 'ADD_ITEM':
+      return { ...state, items: [...state.items, action.item] }
     case 'SET_VIEWPORT':
       return { ...state, viewport: action.viewport }
     default:
