@@ -75,6 +75,15 @@ export function canvasReducer(
             : item,
         ),
       }
+    case 'ROTATE_ITEM':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? { ...item, rotation: action.rotation }
+            : item,
+        ),
+      }
     case 'SET_VIEWPORT':
       return { ...state, viewport: action.viewport }
     default:

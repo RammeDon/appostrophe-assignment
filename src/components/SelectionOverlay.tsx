@@ -5,6 +5,7 @@ import {
   SIGNS,
   type ResizeHandle,
 } from '../lib/resize'
+import { rotationForPointer } from '../lib/rotate'
 import type { CanvasItem, Point, Viewport } from '../lib/types'
 import type { CanvasAction } from '../state/canvasReducer'
 
@@ -16,6 +17,12 @@ interface SelectionOverlayProps {
 }
 
 const HANDLES = Object.keys(SIGNS) as ResizeHandle[]
+const ROTATE_HANDLE_GAP_PX = 20
+
+type DragMode =
+  | { type: 'resize'; handle: ResizeHandle }
+  | { type: 'rotate' }
+  | null
 
 function clientToScreen(
   e: React.PointerEvent,
@@ -42,6 +49,18 @@ function getCornerWorld(item: CanvasItem, handle: ResizeHandle): Point {
   }
 }
 
+function getRotateHandleWorld(item: CanvasItem, scale: number): Point {
+  const t = item.rotation
+  const uy = { x: -Math.sin(t), y: Math.cos(t) }
+  const cx = item.x + item.width / 2
+  const cy = item.y + item.height / 2
+  const gapWorld = ROTATE_HANDLE_GAP_PX / scale
+  return {
+    x: cx + uy.x * (-item.height / 2 - gapWorld),
+    y: cy + uy.y * (-item.height / 2 - gapWorld),
+  }
+}
+
 export function SelectionOverlay({
   item,
   viewport,
@@ -52,40 +71,63 @@ export function SelectionOverlay({
   const screenPos = worldToScreen({ x, y }, viewport)
   const scale = viewport.scale
 
-  const draggingRef = useRef(false)
-  const activeHandleRef = useRef<ResizeHandle | null>(null)
+  const dragModeRef = useRef<DragMode>(null)
 
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId)
     }
-    draggingRef.current = false
-    activeHandleRef.current = null
+    dragModeRef.current = null
   }
 
-  const onHandlePointerDown = (
+  const onResizeHandlePointerDown = (
     e: React.PointerEvent<HTMLDivElement>,
     handle: ResizeHandle,
   ) => {
     e.stopPropagation()
     e.currentTarget.setPointerCapture(e.pointerId)
-    draggingRef.current = true
-    activeHandleRef.current = handle
+    dragModeRef.current = { type: 'resize', handle }
+  }
+
+  const onRotateHandlePointerDown = (
+    e: React.PointerEvent<HTMLDivElement>,
+  ) => {
+    e.stopPropagation()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    dragModeRef.current = { type: 'rotate' }
   }
 
   const onHandlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!draggingRef.current || !activeHandleRef.current) return
+    const dragMode = dragModeRef.current
+    if (!dragMode) return
 
     const screen = clientToScreen(e, viewportRef)
     const pointerWorld = screenToWorld(screen, viewport)
-    const result = resizeFromHandle(item, activeHandleRef.current, pointerWorld)
 
-    dispatch({
-      type: 'RESIZE_ITEM',
-      id: item.id,
-      ...result,
-    })
+    if (dragMode.type === 'resize') {
+      const result = resizeFromHandle(item, dragMode.handle, pointerWorld)
+      dispatch({
+        type: 'RESIZE_ITEM',
+        id: item.id,
+        ...result,
+      })
+    } else {
+      const center = {
+        x: item.x + item.width / 2,
+        y: item.y + item.height / 2,
+      }
+      dispatch({
+        type: 'ROTATE_ITEM',
+        id: item.id,
+        rotation: rotationForPointer(center, pointerWorld),
+      })
+    }
   }
+
+  const rotateHandleScreen = worldToScreen(
+    getRotateHandleWorld(item, scale),
+    viewport,
+  )
 
   return (
     <div className="absolute inset-0 z-10">
@@ -112,13 +154,26 @@ export function SelectionOverlay({
               transform: 'translate(-50%, -50%)',
             }}
             onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => onHandlePointerDown(e, handle)}
+            onPointerDown={(e) => onResizeHandlePointerDown(e, handle)}
             onPointerMove={onHandlePointerMove}
             onPointerUp={endDrag}
             onPointerCancel={endDrag}
           />
         )
       })}
+      <div
+        className="absolute h-3 w-3 rounded-full border-2 border-blue-500 bg-white"
+        style={{
+          left: rotateHandleScreen.x,
+          top: rotateHandleScreen.y,
+          transform: 'translate(-50%, -50%)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={onRotateHandlePointerDown}
+        onPointerMove={onHandlePointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      />
     </div>
   )
 }
