@@ -38,6 +38,7 @@ export function PhotoItem({
   return (
     <div
       className="cursor-grab active:cursor-grabbing"
+      onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => {
         e.stopPropagation()
         dispatch({ type: 'SELECT', id: item.id })

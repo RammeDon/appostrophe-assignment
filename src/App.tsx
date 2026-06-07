@@ -24,7 +24,12 @@ function App() {
           <Slide />
         </WorldLayer>
         {selectedItem && (
-          <SelectionOverlay item={selectedItem} viewport={state.viewport} />
+          <SelectionOverlay
+            item={selectedItem}
+            viewport={state.viewport}
+            viewportRef={viewportRef}
+            dispatch={dispatch}
+          />
         )}
       </CanvasViewport>
     </>

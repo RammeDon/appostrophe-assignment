@@ -60,6 +60,21 @@ export function canvasReducer(
             : item,
         ),
       }
+    case 'RESIZE_ITEM':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? {
+                ...item,
+                x: action.x,
+                y: action.y,
+                width: action.width,
+                height: action.height,
+              }
+            : item,
+        ),
+      }
     case 'SET_VIEWPORT':
       return { ...state, viewport: action.viewport }
     default:
