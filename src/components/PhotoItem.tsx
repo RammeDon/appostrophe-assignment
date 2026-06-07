@@ -1,6 +1,7 @@
 import { useRef, type Dispatch, type RefObject } from 'react'
 import type { CanvasItem, Point, Viewport } from '../lib/types'
 import type { CanvasAction } from '../state/canvasReducer'
+import { SLIDE_HEIGHT, SLIDE_WIDTH } from './Slide'
 
 interface PhotoItemProps {
   item: CanvasItem
@@ -74,16 +75,44 @@ export function PhotoItem({
         top: y,
         width,
         height,
-        transformOrigin: 'center center',
-        transform: `rotate(${rotation}rad)`,
       }}
     >
-      <img
-        src={src}
-        alt=""
-        draggable={false}
-        style={{ width: '100%', height: '100%', objectFit: 'fill' }}
-      />
+      <div
+        style={{
+          position: 'absolute',
+          left: -x,
+          top: -y,
+          width: SLIDE_WIDTH,
+          height: SLIDE_HEIGHT,
+          overflow: 'hidden',
+          pointerEvents: 'none',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: x,
+            top: y,
+            width,
+            height,
+            transformOrigin: 'center center',
+            transform: `rotate(${rotation}rad)`,
+            pointerEvents: 'none',
+          }}
+        >
+          <img
+            src={src}
+            alt=""
+            draggable={false}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'fill',
+              pointerEvents: 'none',
+            }}
+          />
+        </div>
+      </div>
     </div>
   )
 }
