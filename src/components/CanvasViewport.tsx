@@ -5,6 +5,7 @@ import {
   type Dispatch,
   type ReactNode,
 } from 'react'
+import { zoomAtPoint } from '../lib/zoom'
 import type { CanvasAction, CanvasState } from '../state/canvasReducer'
 
 interface CanvasViewportProps {
@@ -25,9 +26,23 @@ export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
 
       const handler = (e: WheelEvent) => {
         e.preventDefault()
-        if (e.ctrlKey) return // zoom in phase 08
 
         const vp = viewportRef.current
+
+        if (e.ctrlKey) {
+          const rect = el.getBoundingClientRect()
+          const cursor = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+          }
+          const factor = Math.pow(1.0015, -e.deltaY)
+          dispatch({
+            type: 'SET_VIEWPORT',
+            viewport: zoomAtPoint(vp, cursor, factor),
+          })
+          return
+        }
+
         dispatch({
           type: 'SET_VIEWPORT',
           viewport: {
