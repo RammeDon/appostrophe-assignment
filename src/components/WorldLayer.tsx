@@ -44,6 +44,7 @@ export function WorldLayer({
         <PhotoItem
           key={item.id}
           item={item}
+          allItems={items}
           viewport={viewport}
           viewportRef={viewportRef}
           dispatch={dispatch}
