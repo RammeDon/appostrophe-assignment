@@ -33,10 +33,13 @@ export function resizeFromHandle(
     x: pointerWorld.x - anchor.x,
     y: pointerWorld.y - anchor.y,
   }
-  const alongX = d.x * ux.x + d.y * ux.y
-  const alongY = d.x * uy.x + d.y * uy.y
-  const width = Math.max(minSize, sign.sx * alongX)
-  const height = Math.max(minSize, sign.sy * alongY)
+  const diagX = ux.x * sign.sx * item.width + uy.x * sign.sy * item.height
+  const diagY = ux.y * sign.sx * item.width + uy.y * sign.sy * item.height
+  const diagSq = diagX * diagX + diagY * diagY
+  const proj = d.x * diagX + d.y * diagY
+  const scaleFactor = Math.max(minSize / Math.min(item.width, item.height), proj / diagSq)
+  const width = item.width * scaleFactor
+  const height = item.height * scaleFactor
   const corner = {
     x: anchor.x + ux.x * sign.sx * width + uy.x * sign.sy * height,
     y: anchor.y + ux.y * sign.sx * width + uy.y * sign.sy * height,

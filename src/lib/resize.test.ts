@@ -36,11 +36,11 @@ test('min-size clamp prevents collapse below 20px', () => {
   expect(result.height).toBe(20)
 })
 
-test('rotated π/2 br resize uses local-frame projection', () => {
+test('rotated π/2 br resize preserves aspect ratio via diagonal projection', () => {
   const rotated: CanvasItem = { ...baseItem, rotation: Math.PI / 2 }
   const result = resizeFromHandle(rotated, 'br', { x: 50, y: 100 })
   expect(result.x).toBeCloseTo(25)
-  expect(result.y).toBeCloseTo(25)
-  expect(result.width).toBeCloseTo(100)
-  expect(result.height).toBeCloseTo(50)
+  expect(result.y).toBeCloseTo(0)
+  expect(result.width).toBeCloseTo(75)
+  expect(result.height).toBeCloseTo(75)
 })
