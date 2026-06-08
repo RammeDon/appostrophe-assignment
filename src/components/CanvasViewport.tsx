@@ -9,6 +9,7 @@ import {
 } from 'react'
 import { screenToWorld } from '../lib/coords'
 import { loadItemFromFile } from '../lib/loadItemFromFile'
+import { findSlideContainingPoint } from '../lib/slides'
 import { zoomAtPoint } from '../lib/zoom'
 import type { CanvasAction, CanvasState } from '../state/canvasReducer'
 
@@ -46,12 +47,18 @@ export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
       }
       const world = screenToWorld(screen, state.viewport)
 
+      const targetSlide =
+        findSlideContainingPoint(world, state.slides) ?? state.slides[0]
+      if (!targetSlide) return
+
       const imageFiles = Array.from(e.dataTransfer.files).filter((file) =>
         file.type.startsWith('image/'),
       )
       for (const file of imageFiles) {
-        loadItemFromFile(file, { kind: 'worldCenter', point: world }, (item) =>
-          dispatch({ type: 'ADD_ITEM', item }),
+        loadItemFromFile(
+          file,
+          { kind: 'worldCenter', point: world, slide: targetSlide },
+          (item) => dispatch({ type: 'ADD_ITEM', item }),
         )
       }
     }

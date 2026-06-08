@@ -10,6 +10,7 @@ const baseItem: CanvasItem = {
   width: 100,
   height: 100,
   rotation: 0,
+  slideId: 'slide-test',
 }
 
 test('unrotated br resize expands from top-left anchor', () => {

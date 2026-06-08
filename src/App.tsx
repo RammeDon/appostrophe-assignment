@@ -1,7 +1,6 @@
 import { useReducer, useRef } from 'react'
 import { CanvasViewport } from './components/CanvasViewport'
 import { SelectionOverlay } from './components/SelectionOverlay'
-import { Slide } from './components/Slide'
 import { Toolbar } from './components/Toolbar'
 import { WorldLayer } from './components/WorldLayer'
 import { canvasReducer, initialState } from './state/canvasReducer'
@@ -13,16 +12,15 @@ function App() {
 
   return (
     <>
-      <Toolbar dispatch={dispatch} />
+      <Toolbar state={state} dispatch={dispatch} />
       <CanvasViewport ref={viewportRef} state={state} dispatch={dispatch}>
         <WorldLayer
           viewport={state.viewport}
           viewportRef={viewportRef}
+          slides={state.slides}
           items={state.items}
           dispatch={dispatch}
-        >
-          <Slide />
-        </WorldLayer>
+        />
         {selectedItem && (
           <SelectionOverlay
             item={selectedItem}

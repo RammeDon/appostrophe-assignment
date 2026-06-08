@@ -1,9 +1,9 @@
 import { SLIDE_HEIGHT, SLIDE_WIDTH } from '../components/Slide'
-import type { CanvasItem, Point } from './types'
+import type { CanvasItem, CanvasSlide, Point } from './types'
 
 export type ItemPlacement =
-  | { kind: 'slideCenter' }
-  | { kind: 'worldCenter'; point: Point }
+  | { kind: 'slideCenter'; slide: CanvasSlide }
+  | { kind: 'worldCenter'; point: Point; slide: CanvasSlide }
 
 function sizedDimensions(naturalWidth: number, naturalHeight: number) {
   const maxWidth = SLIDE_WIDTH / 2
@@ -24,8 +24,8 @@ function positionForPlacement(
 ): { x: number; y: number } {
   if (placement.kind === 'slideCenter') {
     return {
-      x: (SLIDE_WIDTH - width) / 2,
-      y: (SLIDE_HEIGHT - height) / 2,
+      x: placement.slide.x + (SLIDE_WIDTH - width) / 2,
+      y: placement.slide.y + (SLIDE_HEIGHT - height) / 2,
     }
   }
   return {
@@ -57,6 +57,7 @@ export function loadItemFromFile(
       width,
       height,
       rotation: 0,
+      slideId: placement.slide.id,
     })
   }
   img.src = src

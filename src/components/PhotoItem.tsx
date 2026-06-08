@@ -1,8 +1,9 @@
 import { useRef, type Dispatch, type RefObject } from 'react'
-import type { CanvasItem, Point, Viewport } from '../lib/types'
+import type { CanvasItem, CanvasSlide, Point, Viewport } from '../lib/types'
 import type { CanvasAction } from '../state/canvasReducer'
 import { SLIDE_HEIGHT, SLIDE_WIDTH } from './Slide'
 import { snapValue } from '../lib/snap'
+import { findSlideContainingPoint } from '../lib/slides'
 
 const SNAP_PX = 8
 
@@ -25,6 +26,7 @@ function bestSnapCorrection(
 interface PhotoItemProps {
   item: CanvasItem
   allItems: CanvasItem[]
+  slides: CanvasSlide[]
   viewport: Viewport
   viewportRef: RefObject<HTMLDivElement | null>
   dispatch: Dispatch<CanvasAction>
@@ -41,6 +43,7 @@ function clientToScreen(
 export function PhotoItem({
   item,
   allItems,
+  slides,
   viewport,
   viewportRef,
   dispatch,
@@ -50,6 +53,8 @@ export function PhotoItem({
   const startScreenRef = useRef<Point | null>(null)
   const startItemPosRef = useRef<Point | null>(null)
 
+  const owningSlide = slides.find((s) => s.id === item.slideId) ?? slides[0]
+
   const endDrag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId)
@@ -58,6 +63,10 @@ export function PhotoItem({
     startScreenRef.current = null
     startItemPosRef.current = null
   }
+
+  // Clip rect for the owning slide
+  const clipX = owningSlide?.x ?? 0
+  const clipY = owningSlide?.y ?? 0
 
   return (
     <div
@@ -80,22 +89,29 @@ export function PhotoItem({
           y: current.y - startScreenRef.current.y,
         }
 
-        // Raw candidate: where the item's top-left would be based on cumulative drag from start
         const rawX = startItemPosRef.current.x + totalDelta.x / viewport.scale
         const rawY = startItemPosRef.current.y + totalDelta.y / viewport.scale
         const threshold = SNAP_PX / viewport.scale
 
         const others = allItems.filter((o) => o.id !== item.id)
+
+        // Snap targets from the owning slide
+        const slide = owningSlide
+        const slideLeft = slide?.x ?? 0
+        const slideTop = slide?.y ?? 0
+        const slideW = SLIDE_WIDTH
+        const slideH = SLIDE_HEIGHT
+
         const xTargets = [
-          0,
-          SLIDE_WIDTH / 2,
-          SLIDE_WIDTH,
+          slideLeft,
+          slideLeft + slideW / 2,
+          slideLeft + slideW,
           ...others.flatMap((o) => [o.x, o.x + o.width / 2, o.x + o.width]),
         ]
         const yTargets = [
-          0,
-          SLIDE_HEIGHT / 2,
-          SLIDE_HEIGHT,
+          slideTop,
+          slideTop + slideH / 2,
+          slideTop + slideH,
           ...others.flatMap((o) => [o.y, o.y + o.height / 2, o.y + o.height]),
         ]
 
@@ -104,6 +120,15 @@ export function PhotoItem({
 
         const snappedX = rawX + corrX
         const snappedY = rawY + corrY
+
+        const itemCenter = {
+          x: snappedX + item.width / 2,
+          y: snappedY + item.height / 2,
+        }
+        const targetSlide = findSlideContainingPoint(itemCenter, slides)
+        if (targetSlide && targetSlide.id !== item.slideId) {
+          dispatch({ type: 'SET_ITEM_SLIDE', id: item.id, slideId: targetSlide.id })
+        }
 
         dispatch({
           type: 'MOVE_ITEM',
@@ -125,8 +150,8 @@ export function PhotoItem({
       <div
         style={{
           position: 'absolute',
-          left: -x,
-          top: -y,
+          left: clipX - x,
+          top: clipY - y,
           width: SLIDE_WIDTH,
           height: SLIDE_HEIGHT,
           overflow: 'hidden',
@@ -136,8 +161,8 @@ export function PhotoItem({
         <div
           style={{
             position: 'absolute',
-            left: x,
-            top: y,
+            left: x - clipX,
+            top: y - clipY,
             width,
             height,
             transformOrigin: 'center center',

@@ -1,9 +1,11 @@
-import type { CanvasItem, Viewport } from '../lib/types'
+import type { CanvasItem, CanvasSlide, Viewport } from '../lib/types'
 import { SLIDE_HEIGHT, SLIDE_WIDTH } from '../components/Slide'
+import { createNextSlide } from '../lib/slides'
 
 const INITIAL_SCALE = 0.6
 
 export interface CanvasState {
+  slides: CanvasSlide[]
   items: CanvasItem[]
   selectedId: string | null
   viewport: Viewport
@@ -11,6 +13,7 @@ export interface CanvasState {
 
 export type CanvasAction =
   | { type: 'ADD_ITEM'; item: CanvasItem }
+  | { type: 'ADD_SLIDE' }
   | { type: 'SELECT'; id: string }
   | { type: 'DESELECT' }
   | { type: 'MOVE_ITEM'; id: string; dx: number; dy: number }
@@ -24,6 +27,10 @@ export type CanvasAction =
     }
   | { type: 'ROTATE_ITEM'; id: string; rotation: number }
   | { type: 'SET_VIEWPORT'; viewport: Viewport }
+  | { type: 'SET_ITEM_SLIDE'; id: string; slideId: string }
+
+const initialSlideId = crypto.randomUUID()
+const initialSlide: CanvasSlide = { id: initialSlideId, x: 0, y: 0 }
 
 function createInitialViewport(): Viewport {
   const scale = INITIAL_SCALE
@@ -35,6 +42,7 @@ function createInitialViewport(): Viewport {
 }
 
 export const initialState: CanvasState = {
+  slides: [initialSlide],
   items: [],
   selectedId: null,
   viewport: createInitialViewport(),
@@ -47,6 +55,8 @@ export function canvasReducer(
   switch (action.type) {
     case 'ADD_ITEM':
       return { ...state, items: [...state.items, action.item] }
+    case 'ADD_SLIDE':
+      return { ...state, slides: [...state.slides, createNextSlide(state.slides)] }
     case 'SELECT':
       return { ...state, selectedId: action.id }
     case 'DESELECT':
@@ -86,6 +96,15 @@ export function canvasReducer(
       }
     case 'SET_VIEWPORT':
       return { ...state, viewport: action.viewport }
+    case 'SET_ITEM_SLIDE':
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.id
+            ? { ...item, slideId: action.slideId }
+            : item,
+        ),
+      }
     default:
       return state
   }
