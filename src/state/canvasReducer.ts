@@ -1,8 +1,9 @@
 import type { CanvasItem, CanvasSlide, Viewport } from '../lib/types'
-import { SLIDE_HEIGHT, SLIDE_WIDTH } from '../components/Slide'
 import { createNextSlide } from '../lib/slides'
+import { computeFitViewport } from '../lib/viewport'
 
-const INITIAL_SCALE = 0.6
+// Footer chrome below canvas — used for pre-paint initial viewport estimate only
+const TOOLBAR_ZONE_HEIGHT = 72
 
 export interface CanvasState {
   slides: CanvasSlide[]
@@ -33,12 +34,10 @@ const initialSlideId = crypto.randomUUID()
 const initialSlide: CanvasSlide = { id: initialSlideId, x: 0, y: 0 }
 
 function createInitialViewport(): Viewport {
-  const scale = INITIAL_SCALE
-  return {
-    scale,
-    offsetX: window.innerWidth / 2 - (SLIDE_WIDTH * scale) / 2,
-    offsetY: window.innerHeight / 2 - (SLIDE_HEIGHT * scale) / 2,
-  }
+  return computeFitViewport(
+    window.innerWidth,
+    window.innerHeight - TOOLBAR_ZONE_HEIGHT,
+  )
 }
 
 export const initialState: CanvasState = {

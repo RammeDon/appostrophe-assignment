@@ -17,10 +17,11 @@ interface CanvasViewportProps {
   state: CanvasState
   dispatch: Dispatch<CanvasAction>
   children: ReactNode
+  className?: string
 }
 
 export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
-  function CanvasViewport({ state, dispatch, children }, ref) {
+  function CanvasViewport({ state, dispatch, children, className }, ref) {
     const viewportRef = useRef(state.viewport)
     viewportRef.current = state.viewport
     const [isDragging, setIsDragging] = useState(false)
@@ -87,12 +88,15 @@ export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
           return
         }
 
+        const dx = e.shiftKey ? e.deltaY + e.deltaX : e.deltaX
+        const dy = e.shiftKey ? 0 : e.deltaY
+
         dispatch({
           type: 'SET_VIEWPORT',
           viewport: {
             ...vp,
-            offsetX: vp.offsetX - e.deltaX,
-            offsetY: vp.offsetY - e.deltaY,
+            offsetX: vp.offsetX - dx,
+            offsetY: vp.offsetY - dy,
           },
         })
       }
@@ -101,14 +105,14 @@ export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
       return () => el.removeEventListener('wheel', handler)
     }, [dispatch, ref])
 
+    const base =
+      'relative h-full w-full overflow-hidden bg-neutral-900'
+    const dragRing = isDragging ? ' ring-2 ring-inset ring-neutral-500' : ''
+
     return (
       <div
         ref={ref}
-        className={
-          isDragging
-            ? 'relative h-screen w-screen overflow-hidden bg-neutral-900 ring-2 ring-inset ring-neutral-500'
-            : 'relative h-screen w-screen overflow-hidden bg-neutral-900'
-        }
+        className={`${base}${dragRing}${className ? ` ${className}` : ''}`}
         onClick={() => dispatch({ type: 'DESELECT' })}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

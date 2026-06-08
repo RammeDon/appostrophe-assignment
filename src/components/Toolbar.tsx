@@ -36,17 +36,17 @@ export function Toolbar({ state, dispatch }: ToolbarProps) {
   }
 
   return (
-    <div className="fixed left-4 top-4 z-10 flex gap-2">
+    <div className="flex items-center gap-2 rounded-full bg-neutral-800 px-4 py-2 shadow-lg ring-1 ring-neutral-700">
       <button
         type="button"
-        className="rounded bg-neutral-700 px-3 py-1.5 text-sm text-white hover:bg-neutral-600"
+        className="rounded-full bg-neutral-700 px-3 py-1.5 text-sm text-white hover:bg-neutral-600"
         onClick={handleClick}
       >
         Add photo
       </button>
       <button
         type="button"
-        className="rounded bg-neutral-700 px-3 py-1.5 text-sm text-white hover:bg-neutral-600"
+        className="rounded-full bg-neutral-700 px-3 py-1.5 text-sm text-white hover:bg-neutral-600"
         onClick={() => dispatch({ type: 'ADD_SLIDE' })}
       >
         Add slide
