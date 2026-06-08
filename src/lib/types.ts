@@ -14,6 +14,12 @@ export interface Viewport {
   offsetY: number
 }
 
+export interface CanvasSlide {
+  id: string
+  x: number
+  y: number
+}
+
 export interface CanvasItem {
   id: string
   src: string
@@ -22,4 +28,5 @@ export interface CanvasItem {
   width: number
   height: number
   rotation: number
+  slideId: string
 }

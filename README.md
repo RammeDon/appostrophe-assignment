@@ -1,8 +1,21 @@
 # appostrophe-assignment
 
-A desktop web prototype of the SCRL canvas: a scrollable, zoomable workspace where users can upload photos and move, resize, and rotate them with handles.
+A desktop web prototype of the SCRL canvas: a scrollable, zoomable workspace where users can upload photos and move, resize, and rotate them with handles. Supports multiple slides laid out in a horizontal row with per-slide photo ownership.
 
 Built with **React**, **TypeScript**, and **Vite**.
+
+## Features
+
+- Scrollable canvas (vertical and horizontal)
+- Zoomable canvas
+- Uploading photos
+- Drag and dropping photos on cursor
+- Selecting and deselecting photos
+- Dragging photos
+- Rotating photos
+- Resizing photos
+- Snapping images to nearest edge or PhotoItems
+- Adding slides
 
 ## Prerequisites
 

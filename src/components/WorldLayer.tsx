@@ -1,23 +1,23 @@
-import type { Dispatch, ReactNode, RefObject } from 'react'
-import type { CanvasItem, Viewport } from '../lib/types'
+import type { Dispatch, RefObject } from 'react'
+import type { CanvasItem, CanvasSlide, Viewport } from '../lib/types'
 import type { CanvasAction } from '../state/canvasReducer'
 import { PhotoItem } from './PhotoItem'
-import { SLIDE_HEIGHT, SLIDE_WIDTH } from './Slide'
+import { Slide } from './Slide'
 
 interface WorldLayerProps {
   viewport: Viewport
   viewportRef: RefObject<HTMLDivElement | null>
+  slides: CanvasSlide[]
   items: CanvasItem[]
   dispatch: Dispatch<CanvasAction>
-  children: ReactNode
 }
 
 export function WorldLayer({
   viewport,
   viewportRef,
+  slides,
   items,
   dispatch,
-  children,
 }: WorldLayerProps) {
   return (
     <div
@@ -28,22 +28,15 @@ export function WorldLayer({
         transform: `translate(${viewport.offsetX}px, ${viewport.offsetY}px) scale(${viewport.scale})`,
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: SLIDE_WIDTH,
-          height: SLIDE_HEIGHT,
-          overflow: 'hidden',
-        }}
-      >
-        {children}
-      </div>
+      {slides.map((slide) => (
+        <Slide key={slide.id} x={slide.x} y={slide.y} />
+      ))}
       {items.map((item) => (
         <PhotoItem
           key={item.id}
           item={item}
+          allItems={items}
+          slides={slides}
           viewport={viewport}
           viewportRef={viewportRef}
           dispatch={dispatch}

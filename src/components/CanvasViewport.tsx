@@ -2,9 +2,14 @@ import {
   forwardRef,
   useEffect,
   useRef,
+  useState,
   type Dispatch,
+  type DragEvent,
   type ReactNode,
 } from 'react'
+import { screenToWorld } from '../lib/coords'
+import { loadItemFromFile } from '../lib/loadItemFromFile'
+import { findSlideContainingPoint } from '../lib/slides'
 import { zoomAtPoint } from '../lib/zoom'
 import type { CanvasAction, CanvasState } from '../state/canvasReducer'
 
@@ -12,12 +17,52 @@ interface CanvasViewportProps {
   state: CanvasState
   dispatch: Dispatch<CanvasAction>
   children: ReactNode
+  className?: string
 }
 
 export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
-  function CanvasViewport({ state, dispatch, children }, ref) {
+  function CanvasViewport({ state, dispatch, children, className }, ref) {
     const viewportRef = useRef(state.viewport)
     viewportRef.current = state.viewport
+    const [isDragging, setIsDragging] = useState(false)
+
+    const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      setIsDragging(true)
+    }
+
+    const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+      if (e.currentTarget.contains(e.relatedTarget as Node)) return
+      setIsDragging(false)
+    }
+
+    const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      setIsDragging(false)
+
+      const el = e.currentTarget
+      const rect = el.getBoundingClientRect()
+      const screen = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      }
+      const world = screenToWorld(screen, state.viewport)
+
+      const targetSlide =
+        findSlideContainingPoint(world, state.slides) ?? state.slides[0]
+      if (!targetSlide) return
+
+      const imageFiles = Array.from(e.dataTransfer.files).filter((file) =>
+        file.type.startsWith('image/'),
+      )
+      for (const file of imageFiles) {
+        loadItemFromFile(
+          file,
+          { kind: 'worldCenter', point: world, slide: targetSlide },
+          (item) => dispatch({ type: 'ADD_ITEM', item }),
+        )
+      }
+    }
 
     useEffect(() => {
       if (!ref || typeof ref === 'function') return
@@ -43,12 +88,15 @@ export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
           return
         }
 
+        const dx = e.shiftKey ? e.deltaY + e.deltaX : e.deltaX
+        const dy = e.shiftKey ? 0 : e.deltaY
+
         dispatch({
           type: 'SET_VIEWPORT',
           viewport: {
             ...vp,
-            offsetX: vp.offsetX - e.deltaX,
-            offsetY: vp.offsetY - e.deltaY,
+            offsetX: vp.offsetX - dx,
+            offsetY: vp.offsetY - dy,
           },
         })
       }
@@ -57,11 +105,18 @@ export const CanvasViewport = forwardRef<HTMLDivElement, CanvasViewportProps>(
       return () => el.removeEventListener('wheel', handler)
     }, [dispatch, ref])
 
+    const base =
+      'relative h-full w-full overflow-hidden bg-neutral-900'
+    const dragRing = isDragging ? ' ring-2 ring-inset ring-neutral-500' : ''
+
     return (
       <div
         ref={ref}
-        className="relative h-screen w-screen overflow-hidden bg-neutral-900"
+        className={`${base}${dragRing}${className ? ` ${className}` : ''}`}
         onClick={() => dispatch({ type: 'DESELECT' })}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         {children}
       </div>

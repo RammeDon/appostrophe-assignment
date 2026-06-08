@@ -1,13 +1,13 @@
 import { useRef, type ChangeEvent, type Dispatch } from 'react'
-import { SLIDE_HEIGHT, SLIDE_WIDTH } from './Slide'
-import type { CanvasItem } from '../lib/types'
-import type { CanvasAction } from '../state/canvasReducer'
+import { loadItemFromFile } from '../lib/loadItemFromFile'
+import type { CanvasAction, CanvasState } from '../state/canvasReducer'
 
 interface ToolbarProps {
+  state: CanvasState
   dispatch: Dispatch<CanvasAction>
 }
 
-export function Toolbar({ dispatch }: ToolbarProps) {
+export function Toolbar({ state, dispatch }: ToolbarProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleClick = () => {
@@ -17,42 +17,39 @@ export function Toolbar({ dispatch }: ToolbarProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     e.target.value = ''
-    if (!file || !file.type.startsWith('image/')) return
+    if (!file) return
 
-    const src = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      const maxWidth = SLIDE_WIDTH / 2
-      let width = img.naturalWidth
-      let height = img.naturalHeight
-      if (width > maxWidth) {
-        const ratio = maxWidth / width
-        width = maxWidth
-        height = height * ratio
-      }
+    // Upload to the slide that owns the selected item, or the first slide
+    const selectedItem = state.items.find((i) => i.id === state.selectedId)
+    const targetSlide =
+      (selectedItem
+        ? state.slides.find((s) => s.id === selectedItem.slideId)
+        : null) ?? state.slides[0]
 
-      const item: CanvasItem = {
-        id: crypto.randomUUID(),
-        src,
-        x: (SLIDE_WIDTH - width) / 2,
-        y: (SLIDE_HEIGHT - height) / 2,
-        width,
-        height,
-        rotation: 0,
-      }
-      dispatch({ type: 'ADD_ITEM', item })
-    }
-    img.src = src
+    if (!targetSlide) return
+
+    loadItemFromFile(
+      file,
+      { kind: 'slideCenter', slide: targetSlide },
+      (item) => dispatch({ type: 'ADD_ITEM', item }),
+    )
   }
 
   return (
-    <div className="fixed left-4 top-4 z-10">
+    <div className="flex items-center gap-2 rounded-full bg-neutral-800 px-4 py-2 shadow-lg ring-1 ring-neutral-700">
       <button
         type="button"
-        className="rounded bg-neutral-700 px-3 py-1.5 text-sm text-white hover:bg-neutral-600"
+        className="rounded-full bg-neutral-700 px-3 py-1.5 text-sm text-white hover:bg-neutral-600"
         onClick={handleClick}
       >
         Add photo
+      </button>
+      <button
+        type="button"
+        className="rounded-full bg-neutral-700 px-3 py-1.5 text-sm text-white hover:bg-neutral-600"
+        onClick={() => dispatch({ type: 'ADD_SLIDE' })}
+      >
+        Add slide
       </button>
       <input
         ref={inputRef}
