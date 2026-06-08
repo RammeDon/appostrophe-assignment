@@ -4,6 +4,19 @@ A desktop web prototype of the SCRL canvas: a scrollable, zoomable workspace whe
 
 Built with **React**, **TypeScript**, and **Vite**.
 
+## Features
+
+- Scrollable canvas (vertical and horizontal)
+- Zoomable canvas
+- Uploading photos
+- Drag and dropping photos on cursor
+- Selecting and deselecting photos
+- Dragging photos
+- Rotating photos
+- Resizing photos
+- Snapping images to nearest edge or PhotoItems
+- Adding slides
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) **18+** (20+ recommended)
